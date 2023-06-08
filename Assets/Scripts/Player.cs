@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
 
     public float moveSpeed = 5f;
     public Vector2 moveDir;
+    private float friction = 0.85;
+    private float accelSpeed = 0.2;
     private Rigidbody2D _rb;
     private PlayerGFX _playerGFX;
     private GameManager _manager;
@@ -45,7 +47,21 @@ public class Player : MonoBehaviour
             OnInteract();
         }
         
-        moveDir = turnAction.ReadValue<Vector2>().normalized;
+        //movement
+        Vector2 accelDir = turnAction.ReadValue<Vector2>().normalized;
+        //apply friction when needed
+        if (accelDir.x * moveDir.x <= 0) {
+            moveDir.x *= friction;
+        }
+        if (accelDir.y * moveDir.y <= 0) {
+            moveDir.y *= friction;
+        }
+        moveDir.x += accelDir.x;
+        moveDir.y += accelDir.y;
+        //make sure velocity never exceeds max val
+        if (moveDir.sqrMagnitude > 1) {
+            moveDir = moveDir.normalized;
+        }
         _rb.velocity = moveDir * moveSpeed;
         
         if(focus || interactTimer > 0f) _playerGFX.DisplayUI();
